@@ -17,7 +17,7 @@ use crate::{
 };
 use futures::future::{join, join_all};
 use std::{any::TypeId, fmt::Debug};
-#[cfg(any(feature = "ssr", all(feature = "hydrate", feature = "lazy")))]
+#[cfg(any(feature = "ssr", feature = "hydrate"))]
 use std::{future::Future, pin::Pin};
 
 /// A type-erased view. This can be used if control flow requires that multiple different types of
@@ -67,10 +67,10 @@ pub struct AnyView {
     resolve: fn(Erased) -> Pin<Box<dyn Future<Output = AnyView> + Send>>,
     #[cfg(feature = "ssr")]
     dry_resolve: fn(&mut Erased),
-    #[cfg(all(feature = "hydrate", not(feature = "lazy")))]
+    #[cfg(feature = "hydrate")]
     #[allow(clippy::type_complexity)]
     hydrate_from_server: fn(Erased, &Cursor, &PositionState) -> AnyViewState,
-    #[cfg(all(feature = "hydrate", feature = "lazy"))]
+    #[cfg(feature = "hydrate")]
     #[allow(clippy::type_complexity)]
     hydrate_async: fn(
         Erased,
@@ -291,7 +291,7 @@ where
             }
         }
 
-        #[cfg(all(feature = "hydrate", not(feature = "lazy")))]
+        #[cfg(feature = "hydrate")]
         fn hydrate_from_server<T: RenderHtml + 'static>(
             value: Erased,
             cursor: &Cursor,
@@ -313,7 +313,7 @@ where
             }
         }
 
-        #[cfg(all(feature = "hydrate", feature = "lazy"))]
+        #[cfg(feature = "hydrate")]
         fn hydrate_async<T: RenderHtml + 'static>(
             value: Erased,
             cursor: &Cursor,
@@ -367,9 +367,9 @@ where
             to_html_async: to_html_async::<T::Owned>,
             #[cfg(feature = "ssr")]
             to_html_async_ooo: to_html_async_ooo::<T::Owned>,
-            #[cfg(all(feature = "hydrate", not(feature = "lazy")))]
+            #[cfg(feature = "hydrate")]
             hydrate_from_server: hydrate_from_server::<T::Owned>,
-            #[cfg(all(feature = "hydrate", feature = "lazy"))]
+            #[cfg(feature = "hydrate")]
             hydrate_async: hydrate_async::<T::Owned>,
             value: Erased::new(value),
         }
@@ -572,7 +572,7 @@ impl RenderHtml for AnyView {
         cursor: &Cursor,
         position: &PositionState,
     ) -> Self::State {
-        #[cfg(all(feature = "hydrate", not(feature = "lazy")))]
+        #[cfg(feature = "hydrate")]
         {
             if FROM_SERVER {
                 (self.hydrate_from_server)(self.value, cursor, position)
@@ -582,14 +582,6 @@ impl RenderHtml for AnyView {
                      supported."
                 );
             }
-        }
-        #[cfg(all(feature = "hydrate", feature = "lazy"))]
-        {
-            use futures::FutureExt;
-
-            (self.hydrate_async)(self.value, cursor, position)
-                .now_or_never()
-                .unwrap()
         }
         #[cfg(not(feature = "hydrate"))]
         {
@@ -607,21 +599,11 @@ impl RenderHtml for AnyView {
         cursor: &Cursor,
         position: &PositionState,
     ) -> Self::State {
-        #[cfg(all(feature = "hydrate", feature = "lazy"))]
+        #[cfg(feature = "hydrate")]
         {
-            #[cfg(all(feature = "hydrate", feature = "lazy"))]
             let state =
                 (self.hydrate_async)(self.value, cursor, position).await;
             state
-        }
-        #[cfg(all(feature = "hydrate", not(feature = "lazy")))]
-        {
-            _ = cursor;
-            _ = position;
-            panic!(
-                "the `lazy` feature on `tachys` must be activated to use lazy \
-                 hydration"
-            );
         }
         #[cfg(not(feature = "hydrate"))]
         {

@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.88"
 name = "tachys"
-version = "0.2.15"
+version = "0.2.18"
 authors = ["Greg Johnston"]
 build = "build.rs"
 autolib = false
@@ -53,7 +53,6 @@ default = ["testing"]
 delegation = []
 error-hook = []
 hydrate = []
-lazy = []
 islands = [
     "dep:serde",
     "dep:serde_json",
