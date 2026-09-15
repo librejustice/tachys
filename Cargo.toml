@@ -53,6 +53,7 @@ default = ["testing"]
 delegation = []
 error-hook = []
 hydrate = []
+lazy = []
 islands = [
     "dep:serde",
     "dep:serde_json",
