@@ -13,7 +13,7 @@ leptos 0.8 has no `lazy` feature forwarding to `tachys/lazy`, so lazy hydration 
 Usage:
 
     [patch.crates-io]
-    tachys = { git = "https://github.com/librejustice/tachys", rev = "TBD" }
+    tachys = { git = "https://github.com/librejustice/tachys", rev = "dab2a4e07cf4c7534a575e44413b227c1dd19495" }
 
 The fix ships in leptos 0.9 (tachys 0.3), where the gate is upstream and lazy loading is a `leptos` feature. This fork serves 0.8 trees and is meant to be dropped on migration.
 
